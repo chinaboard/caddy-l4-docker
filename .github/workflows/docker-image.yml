@@ -1,25 +1,35 @@
-name: Docker Image CI
+name: Mark stale issues and pull requests
 
 on:
+  schedule:
+    - cron: "* * 1 * *"
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+permissions: # added using https://github.com/step-security/secure-workflows
+  contents: read
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    environment: master
 
+  build:
+    name: Build
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
-    - name: docker login
-      env:
-        DOCKER_USER: ${{secrets.DOCKER_USER}}
-        DOCKER_PASSWORD: ${{secrets.DOCKER_PASSWORD}}
-      run:
-        docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    - name: docker build
-      run: make build
-    - name: docker tag
-      run: make tag
-    - name: docker push
-      run: make push
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Login to ACR
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: https://registry.cn-zhangjiakou.aliyuncs.com
+          region-id: cn-zhangjiakou
+          username: "${{ secrets.ACR_USERNAME }}"
+          password: "${{ secrets.ACR_PASSWORD }}"
+
+      - name: Build and push image
+        run: |
+          docker build -t ${{ secrets.IMAGE_NAME }}:latest .
+          docker push ${{ secrets.IMAGE_NAME }}:latest
