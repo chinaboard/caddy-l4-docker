@@ -12,4 +12,4 @@ LABEL org.opencontainers.image.licenses=MIT
 LABEL org.opencontainers.image.source="https://github.com/ghthor/caddy-l4-docker"
 
 ENTRYPOINT ["/usr/bin/caddy-l4"]
-CMD ["run", "-config", "/etc/Caddyfile.json"]
+CMD ["run", "--config", "/etc/Caddyfile.json"]
